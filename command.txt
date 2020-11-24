@@ -1,0 +1,95 @@
+pip install graphene-django
+
+
+# Part 2
+1. query has exactly the same shape as the result
+2. Use DjangoListField
+3. Custom resolve - traverse related objects
+    a. get all quiz
+    b. get all questions
+4. Additonal filtering
+5. Arguments
+
+
+import graphene
+from graphene_django import DjangoObjectType
+from graphene_django import DjangoListField
+from .models import Quizzes, Category, Question, Answer
+
+# GraphQL presents your DB objects as a graph structure rather than a more hierarchical structure
+# GraphQL types for each of our Django models, we are going to subclass the DjangoObjectType class which will automatically define GraphQL fields that correspond to the fields on the Django models
+
+class QuizzesType(DjangoObjectType):
+    class Meta:
+        model = Quizzes
+        fields = ("id","title","category","quiz")
+
+    #4
+    # @classmethod
+    # def get_queryset(cls, queryset, info):
+    #     return queryset.filter(id=1)
+
+class CategoryType(DjangoObjectType):
+    class Meta:
+        model = Category
+        fields = ("id","name")
+
+class QuestionType(DjangoObjectType):
+    class Meta:
+        model = Question
+        fields = ("title","quiz")
+
+class AnswerType(DjangoObjectType):
+    class Meta:
+        model = Answer
+        fields = ("question","answer_text")
+
+class Query(graphene.ObjectType):
+
+    #0
+    # class Query(ObjectType):
+    #     car = graphene.String()
+
+    #     def resolve_car(self, info, root):
+    #         return f"Mercedes Benz | Model:23qwer | Color: Black"
+
+    #2 all_quizzes = DjangoListField(QuizzesType)
+     
+    #3
+    # all_quizzes = graphene.List(QuizzesType)
+    # all_questions = graphene.List(QuestionType)
+
+    # def resolve_all_questions(root, info):
+    #     return Question.objects.all()
+
+    # def resolve_all_quizzes(root, info):
+    #     return Quizzes.objects.all()
+
+    #4
+    # all_quizzes = DjangoListField(QuizzesType)
+
+    # def resolve_all_quizzes(root, info):
+    #     return Quizzes.objects.all()
+
+    #5
+    # all_questions = graphene.Field(QuestionType, id=graphene.Int())
+    # all_answers = graphene.List(AnswerType, id=graphene.Int())
+
+    # def resolve_all_questions(root, info, id):
+    #     return Question.objects.get(pk=id)
+
+    # def resolve_all_answers(root, info, id):
+    #     return Answer.objects.filter(question=id)
+    # query q($id: Int = 1)
+    # {
+    #         allQuestions(id:$id)
+    #     {
+    #         title
+    #     }
+    #     allAnswers(id:$id)
+    #     {
+    #         answerText
+    #     }
+    # }
+
+schema = graphene.Schema(query=Query)
